@@ -16,10 +16,12 @@ func main() {
 	mux := http.NewServeMux()
 	routes.RegisterRoutes(mux)
 
+	handler := utils.CORSMiddleware(mux)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 	fmt.Println("Server running on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
