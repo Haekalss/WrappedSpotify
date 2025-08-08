@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 # Production stage
 FROM alpine:latest
@@ -22,20 +22,14 @@ FROM alpine:latest
 # Install ca-certificates for HTTPS requests
 RUN apk --no-cache add ca-certificates
 
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Set working directory
-WORKDIR /root/
+# Create app directory
+WORKDIR /app
 
 # Copy the binary from builder stage
 COPY --from=builder /app/main .
 
-# Change ownership to non-root user
-RUN chown appuser:appgroup main
-
-# Switch to non-root user
-USER appuser
+# Make the binary executable
+RUN chmod +x main
 
 # Expose port
 EXPOSE 8080
