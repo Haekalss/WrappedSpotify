@@ -35,9 +35,15 @@ func GetTopTracks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, string(body), http.StatusInternalServerError)
 		return
 	}
-
+	var result struct {
+		Items []interface{} `json:"items"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		http.Error(w, "Failed to parse tracks", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(body)
+	json.NewEncoder(w).Encode(result.Items)
 }
 
 func GetTopArtists(w http.ResponseWriter, r *http.Request) {
@@ -67,9 +73,15 @@ func GetTopArtists(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, string(body), http.StatusInternalServerError)
 		return
 	}
-
+	var result struct {
+		Items []interface{} `json:"items"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		http.Error(w, "Failed to parse artists", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(body)
+	json.NewEncoder(w).Encode(result.Items)
 }
 
 func GetTopGenres(w http.ResponseWriter, r *http.Request) {
