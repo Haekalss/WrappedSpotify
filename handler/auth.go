@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"time"
 )
 
 func SpotifyLogin(w http.ResponseWriter, r *http.Request) {
@@ -69,20 +68,18 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Simpan access_token ke cookie (alternatif: ke session/database)
+	// Redirect ke frontend dengan token di query param
 	accessToken := tokenData["access_token"].(string)
-	http.SetCookie(w, &http.Cookie{
-		Name:     "access_token",
-		Value:    accessToken,
-		Path:     "/",
-		HttpOnly: false,
-		Secure:   false,
-		Expires:  time.Now().Add(time.Hour),
-	})
-
-	// Kembaliin ke frontend
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tokenData)
+	refreshToken := ""
+	if val, ok := tokenData["refresh_token"]; ok {
+		refreshToken = val.(string)
+	}
+	frontendURL := os.Getenv("FRONTEND_REDIRECT_URL")
+	if frontendURL == "" {
+		frontendURL = "https://haekalss.github.io/SpotifyWrapped/" // default, sesuaikan dengan URL frontend kamu
+	}
+	redirectURL := frontendURL + "?token=" + url.QueryEscape(accessToken) + "&refresh=" + url.QueryEscape(refreshToken)
+	http.Redirect(w, r, redirectURL, http.StatusFound)
 
 }
 
